@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wyy.dao.DoctorMapper">
+	<resultMap type="Doctor" id="DoctorList">
+		<id property="doctorId" column="doctorId" />
+		<result property="doctorCode" column="doctorCode" />
+		<result property="doctorName" column="doctorName" />
+		<result property="doctorPassword" column="doctorPassword" />
+		<result property="doctorSex" column="doctorSex" />
+		<result property="doctorAddress" column="doctorAddress" />
+		<result property="doctor_powerId" column="doctor_powerId" />
+		<result property="doctor_occupationId" column="doctor_occupationId" />
+		<result property="doctor_departmentId" column="doctor_departmentId" />
+		<!-- 一对一的形式 -->
+		<association property="power" javaType="Power">
+			<id property="powerId" column="powerId" />
+			<result property="powerCode" column="powerCode" />
+			<result property="powerName" column="powerName" />
+			<result property="powerTime" column="powerTime" />
+		</association>
+		<!-- 一对一的形式 -->
+		<association property="occupation" javaType="Occupation">
+			<id property="occupationId" column="o_occupationId" />
+			<result property="occupationName" column="occupationName" />
+			<result property="occupationMoeny" column="occupationMoeny" />
+			<result property="occupationTime" column="occupationTime" />
+		</association>
+		<!-- 一对一的形式 -->
+		<association property="department" javaType="Department">
+			<id property="departmentId" column="departmentId"/>
+			<result property="departmentName" column="departmentName"/>
+			<result property="departmentTime" column="departmentTime"/>
+			<result property="departmentDescribe" column="departmentDescribe"/>
+		</association>
+	</resultMap>
+
+	<!-- 登录 -->
+	<select id="getDoctorLogin" resultMap="DoctorList">
+		SELECT
+		`doctorId`,`doctorCode`,`doctorName`,`doctorPassword`,`doctorSex`,`doctorAddress`
+		FROM `doctor` WHERE `doctorCode` = #{doctorCode} AND `doctorPassword` = #{doctorPassword};
+	</select>
+
+	<!-- 查询医生信息,根据权限外键id查询信息 -->
+	<select id="getDoctorListBydoctor_powerId" resultMap="DoctorList">
+		SELECT
+		a.`doctorId`,a.`doctorCode`,a.`doctorName`,a.`doctorPassword`,a.`doctorSex`,a.`doctorAddress`,
+		p.`powerId`,p.`powerCode`,p.`powerName`,
+		o.`occupationId` AS o_occupationId ,o.`occupationName`
+		FROM `doctor` AS a
+		LEFT JOIN `power`
+		AS p
+		ON a.`doctor_powerId` = p.`powerId`
+		LEFT JOIN `occupation` AS o
+		ON
+		a.`doctor_occupationId` = o.`occupationId`
+		<if test="doctor_powerId != null and doctor_powerId != 0">
+			WHERE a.`doctor_powerId` = #{doctor_powerId}
+		</if>
+	</select>
+
+	<!-- 查询权限表,提供下拉列表框信息 -->
+	<select id="getPowerList" resultType="Power">
+		SELECT * FROM `power`;
+	</select>
+
+	<!-- 查询科室表,提供下拉列表框信息 -->
+	<select id="getDepartmentList" resultType="Department">
+		SELECT * FROM `department`;
+	</select>
+
+
+	<!-- 查询职业表表,提供下拉列表框信息 -->
+	<select id="getOccupationList" resultType="Occupation">
+		SELECT * FROM `occupation`;
+	</select>
+
+	<!-- 增加一条医生信息 -->
+	<insert id="addDoctor" parameterType="Map">
+		INSERT INTO
+		`doctor`(`doctorCode`,`doctorName`,`doctorPassword`,`doctorSex`,`doctorAddress`,`doctor_powerId`,`doctor_occupationId`,`doctor_departmentId`)
+		VALUES(#{doctorCode},#{doctorName},#{doctorPassword},#{doctorSex},#{doctorAddress},#{doctor_powerId},#{doctor_occupationId},#{doctor_departmentId});
+	</insert>
+
+	<!-- 删除一条医生信息 -->
+	<delete id="deleteDoctor" parameterType="Integer">
+		DELETE FROM `doctor`
+		WHERE `doctorId` = #{doctorId}
+	</delete>
+
+
+	<!-- 信息回显一条医生信息 -->
+	<select id="echoDoctor" resultMap="DoctorList">
+		SELECT
+		a.`doctorId`,a.`doctorCode`,a.`doctorName`,a.`doctorPassword`,a.`doctorSex`,a.`doctorAddress`,a.`doctor_powerId`,a.`doctor_occupationId`,a.`doctor_departmentId`,
+		p.`powerId`,p.`powerCode`,p.`powerName`,p.`powerTime`,
+		o.`occupationId`,o.`occupationName`,o.`occupationName`,o.`occupationTime`,
+		d.`departmentId`,d.`departmentName`,d.`departmentDescribe`,d.`departmentTime`
+		FROM `doctor` AS a
+		LEFT JOIN `power` AS p
+		ON a.`doctor_powerId` = p.`powerId`
+		LEFT JOIN `occupation` AS o
+		ON a.`doctor_occupationId` = o.`occupationId`
+		LEFT JOIN `department` AS d
+		ON a.`doctor_departmentId` = d.`departmentId`
+		WHERE a.`doctorId` = #{doctorId}
+	</select>
+
+	<!-- 修改一条医生信息 -->
+	<update id="updateDoctor" parameterType="Map">
+		UPDATE `doctor` 
+		<set>
+			<if test="doctorCode != null">`doctorCode`=#{doctorCode},</if>
+			<if test="doctorName != null">`doctorName`=#{doctorName},</if>
+			<if test="doctorPassword != null">`doctorPassword`=#{doctorPassword},</if>
+			<if test="doctorSex != null">`doctorSex`=#{doctorSex},</if>
+			<if test="doctorAddress != null">`doctorAddress`=#{doctorAddress},</if>
+			<if test="doctor_powerId != null">`doctor_powerId`=#{doctor_powerId},</if>
+			<if test="doctor_occupationId != null">`doctor_occupationId`=#{doctor_occupationId},</if>
+			<if test="doctor_departmentId != null">`doctor_departmentId`=#{doctor_departmentId}</if>
+		</set>
+		WHERE `doctorId` = #{doctorId};
+	</update>
+	
+	<!-- 模糊查询医生信息 -->
+	<select id="FuzzyQueryDcotor" resultMap="DoctorList">
+		SELECT
+		a.`doctorId`,a.`doctorCode`,a.`doctorName`,a.`doctorPassword`,a.`doctorSex`,a.`doctorAddress`,
+		p.`powerId`,p.`powerCode`,p.`powerName`,
+		o.`occupationId` AS o_occupationId ,o.`occupationName`
+		FROM `doctor` AS a
+		LEFT JOIN `power` AS p
+		ON a.`doctor_powerId` = p.`powerId`
+		LEFT JOIN `occupation` AS o
+		ON a.`doctor_occupationId` = o.`occupationId`
+		WHERE a.`doctor_powerId` = #{doctor_powerId}
+		<if test="doctorName != null and doctorName != ''">
+			AND a.`doctorName` LIKE CONCAT('%',#{doctorName},'%')
+		</if>
+		<if test="doctor_occupationId != null and doctor_occupationId != 0 ">
+			AND a.`doctor_occupationId` = #{doctor_occupationId}
+		</if>
+	</select>
+	
+	
+
+</mapper>

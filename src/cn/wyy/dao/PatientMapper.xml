@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="cn.wyy.dao.PatientMapper">
+ 	<resultMap type="Patient" id="PatientList">
+ 		<id property="patientId" column="patientId"/>
+ 		<result property="patientName" column="patientName"/>
+ 		<result property="patientSex" column="patientSex"/>
+ 		<result property="patientAge" column="patientAge"/>
+ 		<result property="patientDescribe" column="patientDescribe"/>
+ 		<result property="patient_doctorId" column="patient_doctorId"/>
+ 		<result property="patient_drugsId" column="patient_drugsId"/>
+ 		<result property="patient_drugDetailsId" column="patient_drugDetailsId"/>
+ 		
+ 		<!-- 一对一的形式展示数据 -->
+ 		<association property="doctor" javaType="Doctor">
+ 			<id property="doctorId" column="doctorId"/>
+ 			<id property="doctorName" column="doctorName"/>
+ 		</association>
+ 	</resultMap>
+ 	
+ 	<!-- 查询病人信息 -->
+ 	<select id="getPatientList" resultMap="PatientList">
+ 		SELECT p.`patientId`,p.`patientName`,p.`patientSex`,p.`patientAge`,p.`patientDescribe`,
+		d.`doctorId`,d.`doctorName`
+		FROM `patient` AS p
+		LEFT JOIN doctor AS d
+		ON p.`patient_doctorId` = d.`doctorId`
+ 	</select>
+ 	
+ 	<!-- 查询医生信息，用于下拉列表框展示数据 -->
+ 	<select id="getDoctorList" resultType="Doctor">
+ 		SELECT * FROM `doctor` WHERE `doctor_powerId` = #{doctor_powerId};
+ 	</select>
+ 	
+ 	<!-- 添加病人 -->
+ 	<insert id="addPatient" parameterType="Map">
+ 		INSERT INTO `patient`(`patientName`,`patientSex`,`patientAge`,`patientDescribe`,`patient_doctorId`)
+		VALUES(#{patientName},#{patientSex},#{patientAge},#{patientDescribe},#{patient_doctorId});
+ 	</insert>
+ 	
+ 	<!-- 信息回显 -->
+ 	<select id="echoPatient" resultMap="PatientList">
+ 		SELECT p.`patientId`,p.`patientName`,p.`patientSex`,p.`patientAge`,p.`patientDescribe`,p.`patient_doctorId`,p.`patient_drugDetailsId`,p.`patient_drugsId`,
+		d.`doctorId`,d.`doctorName`
+		FROM `patient` AS p
+		LEFT JOIN doctor AS d
+		ON p.`patient_doctorId` = d.`doctorId`
+		WHERE p.`patientId` = #{patientId}
+ 	</select>
+ 	
+ 	<!-- 修改病人 -->
+ 	<update id="updatePatient" parameterType="Map">
+ 		UPDATE `patient`
+		<set>
+			<if test="patientName != null">`patientName`=#{patientName},</if>
+			<if test="patientSex != null">`patientSex`=#{patientSex},</if>
+			<if test="patientAge != null">`patientAge`=#{patientAge},</if>
+			<if test="patientDescribe != null">`patientDescribe`=#{patientDescribe},</if>
+			<if test="patient_doctorId != null">`patient_doctorId`=#{patient_doctorId}</if>
+		</set>
+		WHERE `patientId`=#{patientId}
+ 	</update>
+ 	
+ 	<!-- 删除病人 -->
+ 	<delete id="deletePatient" parameterType="Integer">
+ 		DELETE FROM `patient` WHERE `patientId` = #{patientId};
+ 	</delete>
+ 	
+ 	<!-- 模糊查询病人 -->
+ 	<select id="FuzzyQuery" resultMap="PatientList">
+ 		SELECT p.`patientId`,p.`patientName`,p.`patientSex`,p.`patientAge`,p.`patientDescribe`,
+		d.`doctorId`,d.`doctorName`
+		FROM `patient` AS p
+		LEFT JOIN doctor AS d
+		ON p.`patient_doctorId` = d.`doctorId`
+		<if test="patientName != null and patientName != ''">
+			WHERE p.`patientName` LIKE CONCAT('%',#{patientName},'%')
+		</if>
+		<if test="patient_doctorId != null and patient_doctorId != 0">
+			AND p.`patient_doctorId` = #{patient_doctorId};	
+		</if>
+ 	</select>
+ 	
+ </mapper>

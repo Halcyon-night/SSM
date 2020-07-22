@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.wyy.dao.DepartmentMapper">
+	<resultMap type="Department" id="DepartmentList">
+		<id property="departmentId" column="departmentId" />
+		<result property="departmentName" column="departmentName" />
+		<result property="departmentTime" column="departmentTime" />
+		<result property="departmentDescribe" column="departmentDescribe" />
+		<!-- 一对多的形式展示数据 -->
+		<collection property="doctorList" ofType="Doctor">
+			<id property="doctorId" column="doc_doctorId"/>
+			<result property="doctorCode" column="doctorCode"/>
+			<result property="doctorName" column="doctorName"/>
+			<result property="doctorPassword" column="doctorPassword"/>
+			<result property="doctorSex" column="doctorSex"/>
+			<result property="doctorAddress" column="doctorAddress"/>
+			<result property="doctor_powerId" column="doctor_powerId"/>
+			<result property="doctor_occupationId" column="doctor_occupationId"/>
+			<result property="doctor_departmentId" column="doctor_departmentId"/>
+		</collection>
+		<!-- 一对多的形式展示数据 -->
+		<collection property="OccupationList" ofType="Occupation">
+			<id property="occupationId" column="o_occupationId" />
+			<result property="occupationName" column="occupationName" />
+			<result property="occupationMoeny" column="occupationMoeny" />
+			<result property="occupationTime" column="occupationTime" />
+		</collection>
+	</resultMap>
+	
+	<!-- 三表连接查询,用于主页面显示数据 -->
+	<select id="getDepartmentList" resultMap="DepartmentList">
+		SELECT d.`departmentId`,d.`departmentName`,d.`departmentDescribe`,
+		doc.`doctorId`,doc.`doctorName`,doc.`doctorId`,doc.`doctorCode`,doc.`doctorName`,doc.`doctorPassword`,doc.`doctorSex`,doc.`doctorAddress`,doc.`doctor_powerId`,doc.`doctor_occupationId`,doc.`doctor_departmentId`,
+		o.occupationId,o.occupationName
+		FROM `department` AS d
+		LEFT JOIN `doctor` AS doc
+		ON d.`departmentId` = doc.`doctor_departmentId`
+		LEFT JOIN `occupation` AS o
+		ON o.`occupationId` = doc.`doctor_occupationId`
+	</select>
+	
+	
+</mapper>

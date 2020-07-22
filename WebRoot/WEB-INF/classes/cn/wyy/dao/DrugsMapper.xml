@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="cn.wyy.dao.DrugsMapper">
+ 	<resultMap type="Drugs" id="DrugsList">
+ 		<id property="drugsId" column="drugsId"/>
+ 		<result property="drugsName" column="drugsName"/>
+ 		<result property="drugsTime" column="drugsTime"/>
+ 		<result property="drugsDescribe" column="drugsDescribe"/>
+ 		<!-- 一对多的形式查询数据 -->
+ 		<collection property="drugDetailsList" ofType="DrugDetails">
+ 			<id property="drugDetailsId" column="b_drugDetailsId"/>
+ 			<result property="drugDetailsName" column="drugDetailsName"/>
+ 			<result property="drugDetailsTime" column="drugDetailsTime"/>
+ 			<result property="drugDetailsDescribe" column="drugDetailsDescribe"/>
+ 			<result property="drugDetails_DrugsId" column="drugDetails_DrugsId"/>
+ 		</collection>
+ 	</resultMap>
+ 	
+ 	<resultMap type="DrugDetails" id="DrugDetailsList">
+ 		<id property="drugDetailsId" column="b_drugDetailsId" />
+		<result property="drugDetailsName" column="drugDetailsName" />
+		<result property="drugDetailsTime" column="drugDetailsTime" />
+		<result property="drugDetailsDescribe" column="drugDetailsDescribe" />
+		<result property="drugDetails_DrugsId" column="drugDetails_DrugsId" />
+ 	</resultMap>
+ 	
+ 	<!-- 查询药品分类表的信息 -->
+ 	<select id="getDrugsLisst" resultMap="DrugsList">
+ 		SELECT d.`drugsId`,d.`drugsName`,d.`drugsDescribe`,d.`drugsTime`,
+		dd.`drugDetailsId`AS b_drugDetailsId  ,dd.`drugDetailsName`,dd.`drugDetailsDescribe`,dd.`drugDetailsTime`,dd.`drugDetails_DrugsId`
+		FROM `drugs` AS d
+		LEFT JOIN `drugdetails` AS dd
+		ON d.`drugsId` = dd.`drugDetails_DrugsId`
+ 	</select>	
+ 	
+ 	<!-- 查询药品分类明细表信息,信息回显 -->
+ 	<select id="getDrugDetailsList" resultMap="DrugDetailsList">
+ 		SELECT * FROM `drugdetails` WHERE drugDetailsId=#{drugDetailsId};
+ 	</select>
+ 	
+ 	<!-- 查询药品分类表,下拉列表框展示数据 -->
+ 	<select id="getDrugsList" resultType="Drugs">
+ 		SELECT * FROM `drugs`;
+ 	</select>
+ 	
+ 	<!-- 添加药品明细表信息 -->
+ 	<insert id="addDrugDetails" parameterType="DrugDetails">
+ 		INSERT INTO `drugDetails`(`drugDetailsName`,`drugDetailsTime`,`drugDetailsDescribe`,`drugDetails_DrugsId`)
+		VALUES(#{drugDetailsName},#{drugDetailsTime},#{drugDetailsDescribe},#{drugDetails_DrugsId});
+ 	</insert>
+ 	
+ 	<!-- 修改药品明细表信息 -->
+ 	<update id="updateDrugDetails"  parameterType="DrugDetails">
+ 		UPDATE `drugDetails`
+ 		<set>
+ 			<if test="drugDetailsName != null">`drugDetailsName` = #{drugDetailsName},</if>
+ 			<if test="drugDetailsTime != null">`drugDetailsTime` = #{drugDetailsTime},</if>
+ 			<if test="drugDetailsDescribe != null">`drugDetailsDescribe` = #{drugDetailsDescribe},</if>
+ 			<if test="drugDetails_DrugsId != null">`drugDetails_DrugsId` = #{drugDetails_DrugsId}</if>
+ 		</set>
+		WHERE `drugDetailsId` = #{drugDetailsId};
+ 	</update>
+ 	
+ 	<!-- 删除药品明细信息 -->
+ 	<delete id="deleteDrugDetails" parameterType="Integer">
+ 		DELETE FROM `drugDetails` WHERE `drugDetailsId` = #{drugDetailsId}
+ 	</delete>
+ 	
+ </mapper>
