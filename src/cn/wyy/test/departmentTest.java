@@ -31,7 +31,6 @@ public class departmentTest {
 					System.out.println("该姓名在医院的职业" + occupation.getOccupationName());
 				}
 			}
-			
 		}
 	}
 }
